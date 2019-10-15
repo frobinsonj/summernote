@@ -16,7 +16,7 @@ export default class HintPopover {
     this.options = context.options;
     this.hint = this.options.hint || [];
     this.direction = this.options.hintDirection || 'bottom';
-    this.hints = $.isArray(this.hint) ? this.hint : [this.hint];
+    this.hints = Array.isArray(this.hint) ? this.hint : [this.hint];
 
     this.events = {
       'summernote.keyup': (we, e) => {
@@ -27,7 +27,7 @@ export default class HintPopover {
       'summernote.keydown': (we, e) => {
         this.handleKeydown(e);
       },
-      'summernote.disable summernote.dialog.shown': () => {
+      'summernote.disable summernote.dialog.shown summernote.blur': () => {
         this.hide();
       },
     };

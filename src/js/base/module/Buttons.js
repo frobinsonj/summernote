@@ -58,15 +58,12 @@ export default class Buttons {
       this.fontInstalledMap[name] = env.isFontInstalled(name) ||
         lists.contains(this.options.fontNamesIgnoreCheck, name);
     }
-
     return this.fontInstalledMap[name];
   }
 
   isFontDeservedToAdd(name) {
-    const genericFamilies = ['sans-serif', 'serif', 'monospace', 'cursive', 'fantasy'];
     name = name.toLowerCase();
-
-    return ((name !== '') && this.isFontInstalled(name) && ($.inArray(name, genericFamilies) === -1));
+    return (name !== '' && this.isFontInstalled(name) && env.genericFontFamilies.indexOf(name) === -1);
   }
 
   colorPalette(className, tooltip, backColor, foreColor) {
@@ -119,37 +116,38 @@ export default class Buttons {
         this.ui.dropdown({
           items: (backColor ? [
             '<div class="note-palette">',
-            '  <div class="note-palette-title">' + this.lang.color.background + '</div>',
-            '  <div>',
-            '    <button type="button" class="note-color-reset btn btn-light" data-event="backColor" data-value="inherit">',
-            this.lang.color.transparent,
-            '    </button>',
-            '  </div>',
-            '  <div class="note-holder" data-event="backColor"/>',
-            '  <div>',
-            '    <button type="button" class="note-color-select btn" data-event="openPalette" data-value="backColorPicker">',
-            this.lang.color.cpSelect,
-            '    </button>',
-            '    <input type="color" id="backColorPicker" class="note-btn note-color-select-btn" value="' + this.options.colorButton.backColor + '" data-event="backColorPalette">',
-            '  </div>',
-            '  <div class="note-holder-custom" id="backColorPalette" data-event="backColor"/>',
+              '<div class="note-palette-title">' + this.lang.color.background + '</div>',
+              '<div>',
+                '<button type="button" class="note-color-reset btn btn-light" data-event="backColor" data-value="inherit">',
+                  this.lang.color.transparent,
+                '</button>',
+              '</div>',
+              '<div class="note-holder" data-event="backColor"/>',
+              '<div>',
+                '<button type="button" class="note-color-select btn" data-event="openPalette" data-value="backColorPicker">',
+                  this.lang.color.cpSelect,
+                '</button>',
+                '<input type="color" id="backColorPicker" class="note-btn note-color-select-btn" value="' + this.options.colorButton.backColor + '" data-event="backColorPalette">',
+              '</div>',
+              '<div class="note-holder-custom" id="backColorPalette" data-event="backColor"/>',
             '</div>',
           ].join('') : '') +
           (foreColor ? [
             '<div class="note-palette">',
-            '  <div class="note-palette-title">' + this.lang.color.foreground + '</div>',
-            '  <div>',
-            '    <button type="button" class="note-color-reset btn btn-light" data-event="removeFormat" data-value="foreColor">',
-            this.lang.color.resetToDefault,
-            '    </button>',
-            '  </div>',
-            '  <div class="note-holder" data-event="foreColor"/>',
-            '  <div>',
-            '    <button type="button" class="note-color-select btn" data-event="openPalette" data-value="foreColorPicker">',
-            this.lang.color.cpSelect,
-            '    </button>',
-            '    <input type="color" id="foreColorPicker" class="note-btn note-color-select-btn" value="' + this.options.colorButton.foreColor + '" data-event="foreColorPalette">',
-            '  <div class="note-holder-custom" id="foreColorPalette" data-event="foreColor"/>',
+              '<div class="note-palette-title">' + this.lang.color.foreground + '</div>',
+              '<div>',
+                '<button type="button" class="note-color-reset btn btn-light" data-event="removeFormat" data-value="foreColor">',
+                  this.lang.color.resetToDefault,
+                '</button>',
+              '</div>',
+              '<div class="note-holder" data-event="foreColor"/>',
+              '<div>',
+                '<button type="button" class="note-color-select btn" data-event="openPalette" data-value="foreColorPicker">',
+                  this.lang.color.cpSelect,
+                '</button>',
+                '<input type="color" id="foreColorPicker" class="note-btn note-color-select-btn" value="' + this.options.colorButton.foreColor + '" data-event="foreColorPalette">',
+              '</div>', // Fix missing Div, Commented to find easily if it's wrong
+              '<div class="note-holder-custom" id="foreColorPalette" data-event="foreColor"/>',
             '</div>',
           ].join('') : ''),
           callback: ($dropdown) => {
@@ -192,7 +190,7 @@ export default class Buttons {
           click: (event) => {
             event.stopPropagation();
 
-            const $parent = $('.' + className);
+            const $parent = $('.' + className).find('.show');
             const $button = $(event.target);
             const eventName = $button.data('event');
             let value = $button.attr('data-value');
@@ -339,15 +337,17 @@ export default class Buttons {
     this.context.memo('button.fontname', () => {
       const styleInfo = this.context.invoke('editor.currentStyle');
 
-      // Add 'default' fonts into the fontnames array if not exist
-      $.each(styleInfo['font-family'].split(','), (idx, fontname) => {
-        fontname = fontname.trim().replace(/['"]+/g, '');
-        if (this.isFontDeservedToAdd(fontname)) {
-          if ($.inArray(fontname, this.options.fontNames) === -1) {
-            this.options.fontNames.push(fontname);
+      if (this.options.addDefaultFonts) {
+        // Add 'default' fonts into the fontnames array if not exist
+        $.each(styleInfo['font-family'].split(','), (idx, fontname) => {
+          fontname = fontname.trim().replace(/['"]+/g, '');
+          if (this.isFontDeservedToAdd(fontname)) {
+            if (this.options.fontNames.indexOf(fontname) === -1) {
+              this.options.fontNames.push(fontname);
+            }
           }
-        }
-      });
+        });
+      }
 
       return this.ui.buttonGroup([
         this.button({
@@ -366,7 +366,7 @@ export default class Buttons {
           items: this.options.fontNames.filter(this.isFontInstalled.bind(this)),
           title: this.lang.font.name,
           template: (item) => {
-            return '<span style="font-family: \'' + item + '\'">' + item + '</span>';
+            return '<span style="font-family: ' + env.validFontName(item) + '">' + item + '</span>';
           },
           click: this.context.createInvokeHandlerAndUpdateState('editor.fontName'),
         }),
@@ -522,9 +522,9 @@ export default class Buttons {
           className: 'note-table',
           items: [
             '<div class="note-dimension-picker">',
-            '  <div class="note-dimension-picker-mousecatcher" data-event="insertTable" data-value="1x1"/>',
-            '  <div class="note-dimension-picker-highlighted"/>',
-            '  <div class="note-dimension-picker-unhighlighted"/>',
+              '<div class="note-dimension-picker-mousecatcher" data-event="insertTable" data-value="1x1"/>',
+              '<div class="note-dimension-picker-highlighted"/>',
+              '<div class="note-dimension-picker-unhighlighted"/>',
             '</div>',
             '<div class="note-dimension-display">1 x 1</div>',
           ].join(''),
@@ -775,8 +775,8 @@ export default class Buttons {
   build($container, groups) {
     for (let groupIdx = 0, groupLen = groups.length; groupIdx < groupLen; groupIdx++) {
       const group = groups[groupIdx];
-      const groupName = $.isArray(group) ? group[0] : group;
-      const buttons = $.isArray(group) ? ((group.length === 1) ? [group[0]] : group[1]) : [group];
+      const groupName = Array.isArray(group) ? group[0] : group;
+      const buttons = Array.isArray(group) ? ((group.length === 1) ? [group[0]] : group[1]) : [group];
 
       const $group = this.ui.buttonGroup({
         className: 'note-' + groupName,
@@ -785,7 +785,7 @@ export default class Buttons {
       for (let idx = 0, len = buttons.length; idx < len; idx++) {
         const btn = this.context.memo('button.' + buttons[idx]);
         if (btn) {
-          $group.append(typeof btn === 'function' ? btn() : btn);
+          $group.append(typeof btn === 'function' ? btn(this.context) : btn);
         }
       }
       $group.appendTo($container);

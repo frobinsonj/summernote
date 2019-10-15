@@ -3,6 +3,7 @@ import './summernote-en-US';
 import '../summernote';
 import dom from './core/dom';
 import range from './core/range';
+import lists from './core/lists';
 import Editor from './module/Editor';
 import Clipboard from './module/Clipboard';
 import Dropzone from './module/Dropzone';
@@ -32,9 +33,12 @@ $.summernote = $.extend($.summernote, {
 
   dom: dom,
   range: range,
+  lists: lists,
 
   options: {
     langInfo: $.summernote.lang['en-US'],
+    id: $.now(),
+    editing: true,
     modules: {
       'editor': Editor,
       'clipboard': Clipboard,
@@ -111,8 +115,11 @@ $.summernote = $.extend($.summernote, {
     width: null,
     height: null,
     linkTargetBlank: true,
+    useProtocol: true,
+    defaultProtocol: 'http://',
 
     focus: false,
+    tabDisabled: false,
     tabSize: 4,
     styleWithSpan: true,
     shortcuts: true,
@@ -123,6 +130,9 @@ $.summernote = $.extend($.summernote, {
     maxTextLength: 0,
     blockquoteBreakingLevel: 2,
     spellCheck: true,
+    disableGrammar: false,
+    placeholder: null,
+    inheritPlaceholder: false,
 
     styleTags: ['p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
 
@@ -132,6 +142,7 @@ $.summernote = $.extend($.summernote, {
       'Tahoma', 'Times New Roman', 'Verdana',
     ],
     fontNamesIgnoreCheck: [],
+    addDefaultFonts: true,
 
     fontSizes: ['8', '9', '10', '11', '12', '14', '18', '24', '36'],
 

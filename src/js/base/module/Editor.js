@@ -68,7 +68,7 @@ export default class Editor {
     }
 
     this.fontName = this.wrapCommand((value) => {
-      return this.fontStyling('font-family', "\'" + value + "\'");
+      return this.fontStyling('font-family', env.validFontName(value));
     });
 
     this.fontSize = this.wrapCommand((value) => {
@@ -190,6 +190,7 @@ export default class Editor {
       let linkUrl = linkInfo.url;
       const linkText = linkInfo.text;
       const isNewWindow = linkInfo.isNewWindow;
+      const checkProtocol = linkInfo.checkProtocol;
       let rng = linkInfo.range || this.getLastRange();
       const additionalTextLength = linkText.length - rng.toString().length;
       if (additionalTextLength > 0 && this.isLimited(additionalTextLength)) {
@@ -204,10 +205,10 @@ export default class Editor {
 
       if (this.options.onCreateLink) {
         linkUrl = this.options.onCreateLink(linkUrl);
-      } else {
+      } else if (checkProtocol) {
         // if url doesn't have any protocol and not even a relative or a label, use http:// as default
         linkUrl = /^([A-Za-z][A-Za-z0-9+-.]*\:|#|\/)/.test(linkUrl)
-          ? linkUrl : 'http://' + linkUrl;
+          ? linkUrl : this.options.defaultProtocol + linkUrl;
       }
 
       let anchors = [];
@@ -366,6 +367,12 @@ export default class Editor {
 
     this.$editable.attr('spellcheck', this.options.spellCheck);
 
+    this.$editable.attr('autocorrect', this.options.spellCheck);
+
+    if (this.options.disableGrammar) {
+      this.$editable.attr('data-gramm', false);
+    }
+
     // init content before set event
     this.$editable.html(dom.html(this.$note) || dom.emptyPara);
 
@@ -415,13 +422,15 @@ export default class Editor {
       keys.push(keyName);
     }
 
-    const eventName = keyMap[keys.join('+')];
-    if (eventName) {
-      if (this.context.invoke(eventName) !== false) {
-        event.preventDefault();
+    if (keyName == 'TAB' && !this.options.tabDisable){
+      const eventName = keyMap[keys.join('+')];
+      if (eventName) {
+        if (this.context.invoke(eventName) !== false) {
+          event.preventDefault();
+        }
+      } else if (key.isEdit(event.keyCode)) {
+        this.afterCommand();
       }
-    } else if (key.isEdit(event.keyCode)) {
-      this.afterCommand();
     }
   }
 
@@ -445,7 +454,7 @@ export default class Editor {
     }
 
     if (this.options.maxTextLength > 0) {
-      if ((this.$editable.text().length + pad) >= this.options.maxTextLength) {
+      if ((this.$editable.text().length + pad) > this.options.maxTextLength) {
         return true;
       }
     }

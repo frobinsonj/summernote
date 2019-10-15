@@ -7,6 +7,12 @@ const isSupportAmd = typeof define === 'function' && define.amd; // eslint-disab
  * @param {String} fontName
  * @return {Boolean}
  */
+const genericFontFamilies = ['sans-serif', 'serif', 'monospace', 'cursive', 'fantasy'];
+
+function validFontName(fontName) {
+  return ($.inArray(fontName.toLowerCase(), genericFontFamilies) === -1) ? `'${fontName}'` : fontName;
+}
+
 function isFontInstalled(fontName) {
   const testFontName = fontName === 'Comic Sans MS' ? 'Courier New' : 'Comic Sans MS';
   const testText = 'mmmmmmmmmmwwwww';
@@ -18,7 +24,7 @@ function isFontInstalled(fontName) {
   context.font = testSize + " '" + testFontName + "'";
   const originalWidth = context.measureText(testText).width;
 
-  context.font = testSize + " '" + fontName + "', '" + testFontName + "'";
+  context.font = testSize + ' ' + validFontName(fontName) + ', "' + testFontName + '"';
   const width = context.measureText(testText).width;
 
   return originalWidth !== width;
@@ -41,34 +47,6 @@ if (isMSIE) {
 const isEdge = /Edge\/\d+/.test(userAgent);
 
 let hasCodeMirror = !!window.CodeMirror;
-if (!hasCodeMirror && isSupportAmd) {
-  // Webpack
-  if (typeof __webpack_require__ === 'function') { // eslint-disable-line
-    try {
-      // If CodeMirror can't be resolved, `require.resolve` will throw an
-      // exception and `hasCodeMirror` won't be set to `true`.
-      require.resolve('codemirror');
-      hasCodeMirror = true;
-    } catch (e) {
-      // do nothing
-    }
-  } else if (typeof require !== 'undefined') {
-    // Browserify
-    if (typeof require.resolve !== 'undefined') {
-      try {
-        // If CodeMirror can't be resolved, `require.resolve` will throw an
-        // exception and `hasCodeMirror` won't be set to `true`.
-        require.resolve('codemirror');
-        hasCodeMirror = true;
-      } catch (e) {
-        // do nothing
-      }
-    // Almond/Require
-    } else if (typeof require.specified !== 'undefined') {
-      hasCodeMirror = require.specified('codemirror');
-    }
-  }
-}
 
 const isSupportTouch =
   (('ontouchstart' in window) ||
@@ -104,4 +82,6 @@ export default {
   isFontInstalled,
   isW3CRangeSupport: !!document.createRange,
   inputEventName,
+  genericFontFamilies,
+  validFontName,
 };

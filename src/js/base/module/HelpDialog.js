@@ -17,9 +17,9 @@ export default class HelpDialog {
 
     const body = [
       '<p class="text-center">',
-      '<a href="http://summernote.org/" target="_blank">Summernote @@VERSION@@</a> · ',
-      '<a href="https://github.com/summernote/summernote" target="_blank">Project</a> · ',
-      '<a href="https://github.com/summernote/summernote/issues" target="_blank">Issues</a>',
+        '<a href="http://summernote.org/" target="_blank">Summernote @@VERSION@@</a> · ',
+        '<a href="https://github.com/summernote/summernote" target="_blank">Project</a> · ',
+        '<a href="https://github.com/summernote/summernote/issues" target="_blank">Issues</a>',
       '</p>',
     ].join('');
 
@@ -48,7 +48,7 @@ export default class HelpDialog {
       const command = keyMap[key];
       const $row = $('<div><div class="help-list-item"/></div>');
       $row.append($('<label><kbd>' + key + '</kdb></label>').css({
-        'width': 180,
+        'width': 170,
         'margin-right': 10,
       })).append($('<span/>').html(this.context.memo('help.' + command) || command));
       return $row.html();

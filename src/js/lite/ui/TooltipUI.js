@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 class TooltipUI {
   constructor($node, options) {
     this.$node = $node;
@@ -11,8 +13,8 @@ class TooltipUI {
     // create tooltip node
     this.$tooltip = $([
       '<div class="note-tooltip in">',
-      '  <div class="note-tooltip-arrow"/>',
-      '  <div class="note-tooltip-content"/>',
+        '<div class="note-tooltip-arrow"/>',
+        '<div class="note-tooltip-content"/>',
       '</div>',
     ].join(''));
 
